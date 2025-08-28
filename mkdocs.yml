@@ -1,0 +1,29 @@
+site_name: My Logbook
+site_description: Personal engineering logbook
+site_url: https://example.com
+repo_url: https://example.com/repo
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.path
+    - content.code.copy
+    - search.highlight
+    - search.share
+    - toc.integrate
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/yourname
+nav:
+  - Home: index.md
+  - Logbook:
+      - 2025: log/2025/index.md
+      - Templates: templates/entry.md
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
