@@ -31,6 +31,11 @@ CSV_HEADERS = [
     "departure_datetime",
     "arrival_datetime",
     "distance_nm",
+    "captain",
+    "crew",
+    "sea_state",
+    "wind_speed_kt",
+    "wind_direction_deg",
     "created_at",
     "updated_at",
 ]
@@ -44,6 +49,11 @@ class LogEntry:
     departure_datetime: str  # ISO 8601
     arrival_datetime: str  # ISO 8601
     distance_nm: float
+    captain: str
+    crew: str  # comma-separated names
+    sea_state: str  # free text, e.g., Calm/Moderate/Rough, Douglas scale optional
+    wind_speed_kt: float
+    wind_direction_deg: int
     created_at: str  # ISO 8601
     updated_at: str  # ISO 8601
 
@@ -55,6 +65,11 @@ class LogEntry:
         departure_dt: dt.datetime,
         arrival_dt: dt.datetime,
         distance_nm: float,
+        captain: str,
+        crew: str,
+        sea_state: str,
+        wind_speed_kt: float,
+        wind_direction_deg: int,
     ) -> "LogEntry":
         now = dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
         return LogEntry(
@@ -64,6 +79,11 @@ class LogEntry:
             departure_datetime=_to_iso8601_utc_str(departure_dt),
             arrival_datetime=_to_iso8601_utc_str(arrival_dt),
             distance_nm=round(float(distance_nm), 3),
+            captain=captain.strip(),
+            crew=crew.strip(),
+            sea_state=sea_state.strip(),
+            wind_speed_kt=round(float(wind_speed_kt), 1),
+            wind_direction_deg=int(wind_direction_deg) % 360,
             created_at=now,
             updated_at=now,
         )
@@ -97,13 +117,18 @@ def read_all_entries(csv_path: str) -> List[LogEntry]:
                 entries.append(
                     LogEntry(
                         id=int(row["id"]),
-                        departure_port=row["departure_port"],
-                        destination_port=row["destination_port"],
-                        departure_datetime=row["departure_datetime"],
-                        arrival_datetime=row["arrival_datetime"],
-                        distance_nm=float(row["distance_nm"]),
-                        created_at=row["created_at"],
-                        updated_at=row["updated_at"],
+                        departure_port=row.get("departure_port", ""),
+                        destination_port=row.get("destination_port", ""),
+                        departure_datetime=row.get("departure_datetime", ""),
+                        arrival_datetime=row.get("arrival_datetime", ""),
+                        distance_nm=float(row.get("distance_nm", 0.0) or 0.0),
+                        captain=row.get("captain", ""),
+                        crew=row.get("crew", ""),
+                        sea_state=row.get("sea_state", ""),
+                        wind_speed_kt=float(row.get("wind_speed_kt", 0.0) or 0.0),
+                        wind_direction_deg=int(row.get("wind_direction_deg", 0) or 0),
+                        created_at=row.get("created_at", ""),
+                        updated_at=row.get("updated_at", ""),
                     )
                 )
             except Exception:
@@ -127,6 +152,8 @@ def _convert_entry_to_row(entry: LogEntry) -> dict:
     # Ensure string conversion for CSV compatibility
     row["id"] = str(row["id"])  # type: ignore[index]
     row["distance_nm"] = f"{row['distance_nm']:.3f}"
+    row["wind_speed_kt"] = f"{float(row['wind_speed_kt']):.1f}"
+    row["wind_direction_deg"] = str(int(row["wind_direction_deg"]))
     return row
 
 
@@ -169,6 +196,20 @@ def command_add(args: argparse.Namespace) -> int:
         print("Error: distance must be positive", file=sys.stderr)
         return 2
 
+    # Validate wind inputs
+    try:
+        wind_speed_kt = float(args.wind_speed)
+        if wind_speed_kt < 0:
+            raise ValueError
+    except Exception:
+        print("Error: --wind-speed must be a non-negative number (knots)", file=sys.stderr)
+        return 2
+    try:
+        wind_dir = int(args.wind_dir)
+    except Exception:
+        print("Error: --wind-dir must be an integer degrees 0-359", file=sys.stderr)
+        return 2
+
     entry = LogEntry.create(
         entry_id=next_id,
         departure_port=args.departure,
@@ -176,6 +217,11 @@ def command_add(args: argparse.Namespace) -> int:
         departure_dt=departure_dt,
         arrival_dt=arrival_dt,
         distance_nm=distance,
+        captain=args.captain,
+        crew=args.crew,
+        sea_state=args.sea_state,
+        wind_speed_kt=wind_speed_kt,
+        wind_direction_deg=wind_dir,
     )
 
     write_entry(csv_path, entry)
@@ -210,10 +256,15 @@ def command_list(args: argparse.Namespace) -> int:
             e.departure_datetime,
             e.arrival_datetime,
             f"{e.distance_nm:.1f}",
+            e.captain,
+            e.crew,
+            e.sea_state,
+            f"{e.wind_speed_kt:.1f}",
+            str(e.wind_direction_deg),
         ])
     table = _format_table(
         rows,
-        headers=["ID", "From", "To", "Depart (UTC)", "Arrive (UTC)", "NM"],
+        headers=["ID", "From", "To", "Depart (UTC)", "Arrive (UTC)", "NM", "Captain", "Crew", "Sea State", "Wind kt", "Wind deg"],
     )
     print(table)
     return 0
@@ -274,6 +325,11 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="Distance sailed in nautical miles",
     )
+    p_add.add_argument("--captain", required=True, help="Captain name")
+    p_add.add_argument("--crew", default="", help="Crew names, comma-separated")
+    p_add.add_argument("--sea-state", dest="sea_state", default="", help="Sea state description")
+    p_add.add_argument("--wind-speed", dest="wind_speed", required=True, help="Wind speed in knots")
+    p_add.add_argument("--wind-dir", dest="wind_dir", required=True, help="Wind direction in degrees (0-359)")
     p_add.set_defaults(func=command_add)
 
     p_list = subparsers.add_parser("list", help="List logbook entries")
