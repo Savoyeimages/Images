@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎥 Video Downloader</h1>
+            <p class="subtitle">Download videos with real-time progress tracking</p>
+        </header>
+
+        <div class="download-form">
+            <div class="form-group">
+                <label for="url-input">Video URL</label>
+                <input
+                    type="text"
+                    id="url-input"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    autocomplete="off">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="format-select">Quality</label>
+                    <select id="format-select">
+                        <option value="best">Best Quality</option>
+                        <option value="bestvideo+bestaudio">Best Video + Audio</option>
+                        <option value="worst">Worst Quality (Smallest)</option>
+                        <option value="bestaudio">Audio Only</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="path-input">Download Location</label>
+                    <input
+                        type="text"
+                        id="path-input"
+                        placeholder="Default: ~/Downloads/yt-downloads"
+                        readonly>
+                    <button id="change-path-btn" class="btn-secondary" title="Feature coming soon">📁</button>
+                </div>
+            </div>
+
+            <button id="download-btn" class="btn-primary">
+                <span>⬇️ Download</span>
+            </button>
+        </div>
+
+        <div class="queue-section">
+            <div class="queue-header">
+                <h2>Download Queue</h2>
+                <div class="queue-stats">
+                    <span class="stat">
+                        <span class="stat-label">Active:</span>
+                        <span id="active-count" class="stat-value">0</span>
+                    </span>
+                    <span class="stat">
+                        <span class="stat-label">Completed:</span>
+                        <span id="completed-count" class="stat-value">0</span>
+                    </span>
+                    <span class="stat">
+                        <span class="stat-label">Failed:</span>
+                        <span id="failed-count" class="stat-value">0</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="active">Active</button>
+                <button class="tab" data-tab="completed">Completed</button>
+                <button class="tab" data-tab="failed">Failed</button>
+                <button class="tab" data-tab="all">All</button>
+            </div>
+
+            <div id="downloads-container" class="downloads-container">
+                <div class="empty-state">
+                    <div class="empty-icon">📥</div>
+                    <p>No downloads yet</p>
+                    <p class="empty-hint">Enter a video URL above to start downloading</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
