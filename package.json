@@ -1,0 +1,12 @@
+{
+  "name": "images",
+  "version": "1.0.0",
+  "description": "Images project",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo 'Development server not configured yet. Please specify your development setup.'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
