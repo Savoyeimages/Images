@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:">
+  <title>Video Downloader</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Video Downloader</h1>
+      <p class="subtitle">Extract video information from any URL</p>
+    </header>
+
+    <main>
+      <!-- URL Input Section -->
+      <section class="input-section">
+        <div class="input-group">
+          <input
+            type="text"
+            id="url-input"
+            placeholder="Enter video URL (YouTube, Vimeo, etc.)"
+            autocomplete="off"
+          />
+          <button id="extract-btn" class="btn btn-primary">
+            Extract Info
+          </button>
+        </div>
+        <div id="error-message" class="error-message" style="display: none;"></div>
+      </section>
+
+      <!-- Loading Indicator -->
+      <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>Extracting video information...</p>
+      </div>
+
+      <!-- Video Info Section -->
+      <section id="video-info-section" class="video-info-section" style="display: none;">
+        <div class="video-header">
+          <div class="thumbnail-container">
+            <img id="video-thumbnail" src="" alt="Video thumbnail" />
+          </div>
+          <div class="video-details">
+            <h2 id="video-title">Video Title</h2>
+            <p class="video-meta">
+              <span id="video-uploader"></span>
+              <span class="separator">•</span>
+              <span id="video-duration"></span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Quality Options -->
+        <div class="quality-section">
+          <h3>Available Formats</h3>
+          <div class="format-filter">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="video+audio">Video + Audio</button>
+            <button class="filter-btn" data-filter="video only">Video Only</button>
+            <button class="filter-btn" data-filter="audio only">Audio Only</button>
+          </div>
+          <div id="formats-list" class="formats-list">
+            <!-- Formats will be dynamically inserted here -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p class="status" id="status-message">Ready</p>
+    </footer>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
